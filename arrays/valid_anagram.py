@@ -30,7 +30,6 @@ def valid_anagram_dict(s: str, t: str) -> bool:
 
     return len(d) == 0
 
-
 def valid_anagram_array(s: str, t: str) -> bool:
     """
     valid_anaggram_dict: returns true if `t` is a valid anagram of `s`.
