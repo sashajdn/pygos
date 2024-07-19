@@ -27,7 +27,7 @@ class RBTree(ABC):
         """Insert"""
 
     @abstractmethod
-    def delete(self):
+    def delete(self, key) -> Optional["RBTree"]:
         """Delete"""
 
     @abstractmethod
@@ -63,8 +63,50 @@ class InstrusiveRBTree(RBTree):
         inserted_node = self._insert(key, value)
         self._rebalance(inserted_node)
 
-    def delete(self):
-        pass
+    def delete(self, key):
+        node = self.exists(key)
+        if node is None:
+            return None
+
+        # Leaf node.
+        if node.left is None and node.right is None:
+            parent = node.parent
+            if parent is None:
+                return node
+
+            if parent.left == node:
+                parent.left = None
+                return node
+
+            parent.right = None
+            return node
+
+        if node.left is not None and node.right is not None:
+            inorder_successor = self._next(node)
+            if inorder_successor is None:
+                return node
+
+            parent = node.parent
+            inorder_successor.left, inorder_successor.right = node.left, node.right
+            node.left, node.right = None, None
+            if parent is None:
+                return node
+
+            if parent.left == node:
+                parent.left = inorder_successor
+                return node
+
+            parent.right = inorder_successor
+            return node
+
+        if node.left is None:
+            inorder_successor = node.right
+
+        if node.right is None:
+            inorder_successor = node.left
+
+        if node.right is not None and node.left is not None:
+            inorder_successor = self._next(node)
 
     def exists(self, key):
         if self.key == key:
@@ -103,6 +145,16 @@ class InstrusiveRBTree(RBTree):
                 yield from _traverse(node.right)
 
         return _traverse(self)
+
+    def _next(self, node):
+        if node is None or node.right is None:
+            return None
+
+        curr_node = node.right
+        while curr_node.left is not None:
+            curr_node = curr_node.left
+
+        return curr_node
 
     def _rebalance(self, node_to_rebalance_from):
         parent = node_to_rebalance_from.parent
